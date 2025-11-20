@@ -1,24 +1,38 @@
-import express, { Request, Response } from "express";
+import express from "express";
+import dotenv from "dotenv";
+
+// Load biến môi trường từ file env
+dotenv.config();
+
 import cors from "cors";
+import cookieParser from "cookie-parser";
+import adminRoutes from "./routes/admin/index.route";
+import { connectDB } from "./config/database.config";
 
 const app = express();
 const port = 8082;
+
+// Kết nối CSDL
+connectDB();
 
 // Cấu hình cors
 app.use(
   cors({
     origin: ["http://localhost:5173", "http://localhost:3000"],
+    credentials: true,
   })
 );
 
 // Cho phép gửi dữ liệu lên dạng json
 app.use(express.json());
 
-app.post("/admin/account/register", (req: Request, res: Response) => {
-  console.log(req.body);
+// Lấy được cookie từ fe
+app.use(cookieParser());
 
-  res.status(201).json({ message: "Đăng ký tài khoản thành công!" });
-});
+// app.post("/admin")
+
+// Thiết lập đường dẫn
+app.use("/admin", adminRoutes);
 
 app.listen(port, () => {
   console.log(`Website đang chạy trên cổng ${port}`);

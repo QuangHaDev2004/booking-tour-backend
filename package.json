@@ -7,10 +7,14 @@
     "start": "nodemon index.ts"
   },
   "dependencies": {
+    "@types/cookie-parser": "^1.4.10",
     "@types/cors": "^2.8.19",
+    "bcryptjs": "^3.0.3",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
+    "joi": "^18.0.2",
     "mongoose": "^8.20.0"
   },
   "devDependencies": {
