@@ -3,6 +3,7 @@ import Category from "../../models/category.model";
 import { AccountRequest } from "../../interfaces/resquest.interface";
 import slugify from "slugify";
 import * as categoryHelper from "../../helpers/category.helper";
+import AccountAdmin from "../../models/account-admin.model";
 
 export const createPost = async (req: AccountRequest, res: Response) => {
   try {
@@ -32,14 +33,107 @@ export const list = async (req: AccountRequest, res: Response) => {
   try {
     const categoryList = await Category.find({
       deleted: false,
+    }).sort({
+      position: "desc",
     });
 
     const categoryTree = categoryHelper.buildCategoryTree(categoryList, "");
 
+    const dataFinal = [];
+    for (const item of categoryList) {
+      const itemFinal = {
+        id: item.id,
+        name: item.name,
+        avatar: item.avatar,
+        position: item.position,
+        status: item.status,
+        createdAt: item.createdAt,
+        updatedAt: item.updatedAt,
+        createdByFullName: "",
+        updatedByFullName: "",
+      };
+
+      const infoAccount = await AccountAdmin.findOne({
+        _id: item.createdBy,
+      });
+
+      if (infoAccount) {
+        itemFinal.createdByFullName = infoAccount.fullName as string;
+        itemFinal.updatedByFullName = infoAccount.fullName as string;
+
+        dataFinal.push(itemFinal);
+      }
+    }
+
     res.status(200).json({
       message: "Danh sách danh mục!",
-      categoryList: categoryTree,
+      categoryTree: categoryTree,
+      categoryList: dataFinal,
     });
+  } catch (error) {
+    console.log("Lỗi khi gọi createPost", error);
+    res.status(500).json({ message: "Lỗi hệ thống!" });
+  }
+};
+
+export const edit = async (req: AccountRequest, res: Response) => {
+  try {
+    const id = req.params.id;
+
+    const categoryDetail = await Category.findOne({
+      _id: id,
+      deleted: false,
+    });
+
+    const dataFinal = {
+      id: categoryDetail?.id,
+      name: categoryDetail?.name,
+      parent: categoryDetail?.parent,
+      position: categoryDetail?.position,
+      status: categoryDetail?.status,
+      avatar: categoryDetail?.avatar,
+      description: categoryDetail?.description,
+    };
+
+    res.status(200).json({
+      message: "Chi tiết danh mục!",
+      categoryDetail: dataFinal,
+    });
+  } catch (error) {
+    console.log("Lỗi khi gọi createPost", error);
+    res.status(500).json({ message: "Lỗi hệ thống!" });
+  }
+};
+
+export const editPatch = async (req: AccountRequest, res: Response) => {
+  try {
+    const id = req.params.id;
+
+    if (req.body.position) {
+      req.body.position = parseInt(req.body.position);
+    } else {
+      const totalRecord = await Category.countDocuments({});
+      req.body.position = totalRecord + 1;
+    }
+
+    req.body.slug = slugify(req.body.name, { lower: true });
+    req.body.updatedBy = req.account.id;
+
+    if (req.file) {
+      req.body.avatar = req.file.path;
+    } else {
+      delete req.body.avatar;
+    }
+
+    await Category.updateOne(
+      {
+        _id: id,
+        deleted: false,
+      },
+      req.body
+    );
+
+    res.status(200).json({ message: "Cập nhật thành công!" });
   } catch (error) {
     console.log("Lỗi khi gọi createPost", error);
     res.status(500).json({ message: "Lỗi hệ thống!" });

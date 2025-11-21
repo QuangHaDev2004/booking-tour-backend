@@ -17,4 +17,13 @@ router.post(
 
 router.get("/list", categoryController.list);
 
+router.get("/edit/:id", categoryController.edit);
+
+router.patch(
+  "/edit/:id",
+  upload.single("avatar"),
+  categoryValidate.createPost,
+  categoryController.editPatch
+);
+
 export default router;
