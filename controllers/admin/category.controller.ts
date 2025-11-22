@@ -67,9 +67,27 @@ export const list = async (req: AccountRequest, res: Response) => {
       find.slug = keywordRegex;
     }
 
-    const categoryList = await Category.find(find).sort({
-      position: "desc",
-    });
+    // Phân trang
+    const limitItem = 4;
+    let page = 1;
+    if (req.query.page && parseInt(`${req.query.page}`) > 0) {
+      page = parseInt(`${req.query.page}`);
+    }
+    const skip = (page - 1) * limitItem;
+    const totalRecord = await Category.countDocuments(find);
+    const totalPage = Math.ceil(totalRecord / limitItem);
+    const pagination = {
+      skip: skip,
+      totalRecord: totalRecord,
+      totalPage: totalPage,
+    };
+
+    const categoryList = await Category.find(find)
+      .sort({
+        position: "desc",
+      })
+      .limit(limitItem)
+      .skip(skip);
 
     const categoryTree = categoryHelper.buildCategoryTree(categoryList, "");
 
@@ -115,6 +133,7 @@ export const list = async (req: AccountRequest, res: Response) => {
       categoryTree: categoryTree,
       categoryList: dataFinal,
       accountAdminList: accountListFinal,
+      pagination,
     });
   } catch (error) {
     console.log("Lỗi khi gọi list", error);
