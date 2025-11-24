@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import AccountAdmin from "../../models/account-admin.model";
+import SettingWebsiteInfo from "../../models/setting-website-info.model";
 
 export const accountAdminList = async (req: Request, res: Response) => {
   try {
@@ -20,6 +21,73 @@ export const accountAdminList = async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.log("Lỗi khi gọi accountAdminList", error);
+    res.status(500).json({ message: "Lỗi hệ thống!" });
+  }
+};
+
+export const websiteInfoPatch = async (req: Request, res: Response) => {
+  try {
+    const files = req.files as any;
+
+    if (files && files.logo) {
+      req.body.logo = files.logo[0].path;
+    } else {
+      delete req.body.logo;
+    }
+
+    if (files && files.favicon) {
+      req.body.favicon = files.favicon[0].path;
+    } else {
+      delete req.body.favicon;
+    }
+
+    const websiteInfo = await SettingWebsiteInfo.findOne({});
+    if (!websiteInfo) {
+      const newRecord = new SettingWebsiteInfo(req.body);
+      await newRecord.save();
+    } else {
+      await SettingWebsiteInfo.updateOne(
+        {
+          _id: websiteInfo.id,
+        },
+        req.body
+      );
+    }
+
+    res.status(200).json({ message: "Cập nhật thông tin website thành công!" });
+  } catch (error) {
+    console.log("Lỗi khi gọi websiteInfoPatch", error);
+    res.status(500).json({ message: "Lỗi hệ thống!" });
+  }
+};
+
+export const websiteInfo = async (req: Request, res: Response) => {
+  try {
+    const websiteInfo = await SettingWebsiteInfo.findOne({});
+
+    if (!websiteInfo) {
+      return res.status(404).json({
+        message: "Thông tin website không tồn tại!",
+      });
+    }
+
+    const dataFinal = {
+      websiteName: websiteInfo?.websiteName,
+      phone: websiteInfo?.phone,
+      email: websiteInfo?.email,
+      address: websiteInfo?.address,
+      facebook: websiteInfo?.facebook,
+      zalo: websiteInfo?.zalo,
+      logo: websiteInfo?.logo,
+      favicon: websiteInfo?.favicon,
+    };
+
+    res.status(200).json({
+      message: "Chi tiết website info",
+      websiteInfo: dataFinal,
+    });
+  } catch (error) {
+    console.log("Lỗi khi gọi websiteInfo", error);
     res.status(500).json({ message: "Lỗi hệ thống!" });
   }
 };
