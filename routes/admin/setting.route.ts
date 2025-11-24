@@ -9,4 +9,15 @@ const upload = multer({ storage: storage });
 
 router.get("/account-admin/list", settingController.accountAdminList);
 
-export default router
+router.patch(
+  "/website-info",
+  upload.fields([
+    { name: "logo", maxCount: 1 },
+    { name: "favicon", maxCount: 1 },
+  ]),
+  settingController.websiteInfoPatch
+);
+
+router.get("/website-info", settingController.websiteInfo);
+
+export default router;

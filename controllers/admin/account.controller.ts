@@ -3,7 +3,7 @@ import AccountAdmin from "../../models/account-admin.model";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
-import Session from "../../models/session";
+import Session from "../../models/session.model";
 import { AccountRequest } from "../../interfaces/resquest.interface";
 
 const ACCESS_TOKEN_TTL = "15m";

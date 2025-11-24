@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import Session from "../../models/session";
+import Session from "../../models/session.model";
 import jwt from "jsonwebtoken";
 
 const ACCESS_TOKEN_TTL = "15m";
